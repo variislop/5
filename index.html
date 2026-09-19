@@ -1,0 +1,54 @@
+<audio
+    id="music"
+    src="music.mp3"
+    preload="auto">
+</audio>
+
+<audio
+    id="morse"
+    src="morse-code.mp3"
+    preload="auto">
+</audio>
+
+<script>
+    const music = document.getElementById("music");
+    const morse = document.getElementById("morse");
+
+    music.volume = 0.65;
+    morse.volume = 0.65;
+
+    let playCount = 0;
+    let started = false;
+
+    function startMusic() {
+        if (started) return;
+
+        started = true;
+
+        music.currentTime = 0;
+        music.play().catch(() => {
+            started = false;
+        });
+    }
+
+    music.addEventListener("ended", () => {
+        playCount++;
+
+        if (playCount < 5) {
+            music.currentTime = 0;
+            music.play().catch(() => {});
+        } else {
+            // После пятого проигрывания запускаем Morse Code
+            morse.currentTime = 0;
+            morse.play().catch(() => {});
+        }
+    });
+
+    window.addEventListener("load", startMusic);
+
+    // Если браузер заблокировал autoplay,
+    // запускаем при первом взаимодействии
+    document.addEventListener("click", startMusic, { once: true });
+    document.addEventListener("keydown", startMusic, { once: true });
+    document.addEventListener("touchstart", startMusic, { once: true });
+</script>
