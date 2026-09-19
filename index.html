@@ -1,54 +1,359 @@
-<audio
-    id="music"
-    src="music.mp3"
-    preload="auto">
-</audio>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<audio
-    id="morse"
-    src="morse-code.mp3"
-    preload="auto">
-</audio>
+    <title>Без ключа</title>
 
-<script>
-    const music = document.getElementById("music");
-    const morse = document.getElementById("morse");
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Infant:ital,wght@0,400;0,500;1,400;1,500&display=swap"
+        rel="stylesheet"
+    >
 
-    music.volume = 0.65;
-    morse.volume = 0.65;
-
-    let playCount = 0;
-    let started = false;
-
-    function startMusic() {
-        if (started) return;
-
-        started = true;
-
-        music.currentTime = 0;
-        music.play().catch(() => {
-            started = false;
-        });
-    }
-
-    music.addEventListener("ended", () => {
-        playCount++;
-
-        if (playCount < 5) {
-            music.currentTime = 0;
-            music.play().catch(() => {});
-        } else {
-            // После пятого проигрывания запускаем Morse Code
-            morse.currentTime = 0;
-            morse.play().catch(() => {});
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
-    });
 
-    window.addEventListener("load", startMusic);
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
 
-    // Если браузер заблокировал autoplay,
-    // запускаем при первом взаимодействии
-    document.addEventListener("click", startMusic, { once: true });
-    document.addEventListener("keydown", startMusic, { once: true });
-    document.addEventListener("touchstart", startMusic, { once: true });
-</script>
+        body {
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Затемнение по краям */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 5;
+            pointer-events: none;
+
+            background:
+                radial-gradient(
+                    ellipse at center,
+                    transparent 45%,
+                    rgba(0, 0, 0, 0.35) 75%,
+                    rgba(0, 0, 0, 0.85) 100%
+                );
+        }
+
+        /* Мерцание старой плёнки */
+        .flicker {
+            position: fixed;
+            inset: 0;
+            z-index: 4;
+            pointer-events: none;
+
+            background: rgba(255, 255, 255, 0.015);
+
+            animation: flicker 0.12s infinite;
+        }
+
+        @keyframes flicker {
+            0% {
+                opacity: 0.15;
+            }
+
+            25% {
+                opacity: 0.05;
+            }
+
+            50% {
+                opacity: 0.12;
+            }
+
+            75% {
+                opacity: 0.03;
+            }
+
+            100% {
+                opacity: 0.1;
+            }
+        }
+
+        /* Зерно плёнки */
+        .grain {
+            position: fixed;
+            inset: -50%;
+            z-index: 6;
+            pointer-events: none;
+
+            opacity: 0.11;
+
+            background-image:
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E");
+
+            animation: grain 0.18s steps(2) infinite;
+        }
+
+        @keyframes grain {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            25% {
+                transform: translate(-3%, 2%);
+            }
+
+            50% {
+                transform: translate(2%, -3%);
+            }
+
+            75% {
+                transform: translate(3%, 3%);
+            }
+
+            100% {
+                transform: translate(-2%, -2%);
+            }
+        }
+
+        /* Царапины плёнки */
+        .scratches {
+            position: fixed;
+            inset: 0;
+            z-index: 7;
+            pointer-events: none;
+
+            opacity: 0.08;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    transparent 0%,
+                    transparent 17%,
+                    rgba(255, 255, 255, 0.35) 17.05%,
+                    transparent 17.12%,
+                    transparent 42%,
+                    rgba(255, 255, 255, 0.2) 42.04%,
+                    transparent 42.1%,
+                    transparent 73%,
+                    rgba(255, 255, 255, 0.25) 73.04%,
+                    transparent 73.1%,
+                    transparent 100%
+                );
+
+            background-size: 13px 100%;
+
+            animation: scratches 1.8s linear infinite;
+        }
+
+        @keyframes scratches {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(13px);
+            }
+        }
+
+        /* Центральная композиция */
+        .scene {
+            position: relative;
+            z-index: 2;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            transform: translateY(-3%);
+        }
+
+        /* Музыкальная шкатулка */
+        .box {
+            width: min(430px, 65vw);
+            max-height: 55vh;
+
+            object-fit: contain;
+
+            filter:
+                brightness(0.78)
+                contrast(1.15)
+                saturate(0.65)
+                sepia(0.08);
+        }
+
+        /* Надпись */
+        .title {
+            margin-top: 15px;
+
+            color: #868280;
+
+            font-family: "Cormorant Infant", serif;
+            font-size: 27px;
+            font-weight: 400;
+            font-style: italic;
+
+            letter-spacing: 0.025em;
+            text-align: center;
+            white-space: nowrap;
+
+            text-shadow:
+                0 0 10px rgba(134, 130, 128, 0.12);
+
+            user-select: none;
+        }
+
+        /* Телефоны */
+        @media (max-width: 600px) {
+            .box {
+                width: 75vw;
+                max-height: 48vh;
+            }
+
+            .title {
+                margin-top: 11px;
+                font-size: 21px;
+                white-space: normal;
+                padding: 0 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="scene">
+
+        <img
+            class="box"
+            src="music-box.png"
+            alt="Музыкальная шкатулка"
+        >
+
+        <div class="title">
+            Без ключа тебе не пробраться...
+        </div>
+
+    </div>
+
+    <!-- Основная музыка -->
+    <audio
+        id="music"
+        src="music.mp3"
+        preload="auto">
+    </audio>
+
+    <!-- Morse Code -->
+    <audio
+        id="morse"
+        src="morse-code.mp3"
+        preload="auto">
+    </audio>
+
+    <!-- Эффекты плёнки -->
+    <div class="flicker"></div>
+    <div class="grain"></div>
+    <div class="scratches"></div>
+
+    <script>
+        const music = document.getElementById("music");
+        const morse = document.getElementById("morse");
+
+        music.volume = 0.65;
+        morse.volume = 0.65;
+
+        let playCount = 0;
+        let started = false;
+        let morseStarted = false;
+
+        /*
+         * Запускаем основную музыку.
+         * Если браузер разрешает autoplay —
+         * она начнёт играть сразу.
+         */
+        function startMusic() {
+            if (started || morseStarted) {
+                return;
+            }
+
+            started = true;
+
+            music.currentTime = 0;
+
+            music.play().catch(() => {
+                started = false;
+            });
+        }
+
+        /*
+         * Когда music.mp3 полностью закончился,
+         * считаем одно проигрывание.
+         */
+        music.addEventListener("ended", () => {
+
+            playCount++;
+
+            /*
+             * Первые 4 окончания:
+             * запускаем music.mp3 заново.
+             */
+            if (playCount < 5) {
+
+                music.currentTime = 0;
+
+                music.play().catch(() => {});
+
+                return;
+            }
+
+            /*
+             * После пятого проигрывания:
+             * полностью останавливаем music.mp3
+             * и один раз запускаем morse-code.mp3.
+             */
+            if (playCount === 5 && !morseStarted) {
+
+                morseStarted = true;
+
+                music.pause();
+                music.currentTime = 0;
+
+                morse.currentTime = 0;
+
+                morse.play().catch(() => {});
+            }
+        });
+
+        /*
+         * Попытка автоматического запуска
+         * после загрузки страницы.
+         */
+        window.addEventListener("load", () => {
+            startMusic();
+        });
+
+        /*
+         * Если браузер заблокировал autoplay,
+         * музыка запустится после первого взаимодействия
+         * пользователя со страницей.
+         */
+        document.addEventListener("click", () => {
+            startMusic();
+        }, { once: true });
+
+        document.addEventListener("keydown", () => {
+            startMusic();
+        }, { once: true });
+
+        document.addEventListener("touchstart", () => {
+            startMusic();
+        }, { once: true });
+    </script>
+
+</body>
+</html>
